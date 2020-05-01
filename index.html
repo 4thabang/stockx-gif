@@ -78,7 +78,7 @@
     </style>
 </head>
 
-<body>
+<body onload="onload()">
     <main class="main">
         <div class="center">
             <div class="row">
@@ -121,6 +121,24 @@
     </a>
 
     <script type="text/babel">
+        function getQueryVariable(variable) {
+            const query = window.location.search.substring(1);
+            const vars = query.split("&");
+            for (let i = 0; i < vars.length; i++) {
+                const pair = vars[i].split("=");
+                if (pair[0] == variable) return pair[1];
+            }
+            return (false);
+        }
+
+        function onload() {
+            const link = getQueryVariable('url');
+            if (!link) return;
+
+            const url = document.getElementById('url');
+            url.value = link;
+        }
+
         function parseStockXLink(url) {
             const regex = /stockx.com\/([a-zA-Z0-9_-]+)/g;
             const test = regex.exec(url);
