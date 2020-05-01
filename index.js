@@ -77,7 +77,7 @@ function makeGif(images, name) {
         downloadButton.onclick = () => {
             const element = document.createElement('a');
             element.setAttribute('href', obj.image);
-            element.setAttribute('download', `${name}.png`);
+            element.setAttribute('download', `${name}.gif`);
 
             element.style.display = 'none';
             document.body.appendChild(element);
