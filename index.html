@@ -168,16 +168,16 @@
             }, (obj) => {
                 if (obj.error) {
                     return content.innerHTML += `
-				<br>
-				<div class="panel error">
-					<div class="head"><i class="fas fa-exclamation-circle"></i> An error occurred!</div>
-					<div class="body" style="color: #2C2F33;" align="left">
-						Code: ${obj.errorCode || 'Unknown Error'}
-						<br>
-						Message: ${obj.errorMsg || 'An unknown error occurred.'}
-					</div>
-				</div>
-			`;
+                        <br>
+                        <div class="panel error">
+                            <div class="head"><i class="fas fa-exclamation-circle"></i> An error occurred!</div>
+                            <div class="body" style="color: #2C2F33;" align="left">
+                                Code: ${obj.errorCode || 'Unknown Error'}
+                                <br>
+                                Message: ${obj.errorMsg || 'An unknown error occurred.'}
+                            </div>
+                        </div>
+                    `;
                 }
 
                 console.log(obj.image.substring(0, 30));
@@ -194,19 +194,22 @@
                 reloadButton.style.backgroundColor = '#ff7900';
                 reloadButton.innerHTML = '<i class="fas fa-redo"></i> Generate Another';
 
-                content.appendChild(downloadButton);
-                content.appendChild(reloadButton);
+                content.append(downloadButton);
+                content.append(reloadButton);
+
+                const element = document.createElement('a');
+                element.setAttribute('href', obj.image);
+                element.setAttribute('download', `${name}.gif`);
+
+                element.style.display = 'none';
+                document.body.appendChild(element);
 
                 downloadButton.onclick = () => {
-                    const element = document.createElement('a');
-                    element.setAttribute('href', obj.image);
-                    element.setAttribute('download', `${name}.gif`);
-
-                    element.style.display = 'none';
-                    document.body.appendChild(element);
+                    downloadButton.disabled = true;
+                    downloadButton.autocomplete = 'off';
+                    downloadButton.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Downloading...';
 
                     element.click();
-
                     document.body.removeChild(element);
                 }
 
@@ -239,7 +242,6 @@
             const [imgs, name] = data;
             makeGif(imgs, name);
         }
-
     </script>
 </body>
 
