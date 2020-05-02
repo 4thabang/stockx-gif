@@ -39,6 +39,8 @@
     <link href="https://unpkg.com/caramel@2.0.0-beta/dist/css/caramel.min.css" rel="stylesheet">
     <script src="https://unpkg.com/gifshot@0.4.5/dist/gifshot.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/6.18.1/babel.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@9"></script>
+    <link href="//cdn.jsdelivr.net/npm/@sweetalert2/theme-dark@3/dark.css" rel="stylesheet">
 
     <style>
         body {
@@ -97,26 +99,35 @@
                             <img src= '/assets/banner.png' style="height: 35%; width: 35%;">
                         </div>
                         <div id="content" class="content">
-                            <h2>StockX Product GIF Generator</h2>
+                            <h3 style="font-weight: 900;">StockX Product GIF Generator</h3>
+                            <h5>Create GIFs from StockX products with <a href="https://stockx.com/news/360-degree-images-are-live/" target="_blank">360º image support</a>.</h5>
                             <p>
-                                This site allows you to create a GIF from the StockX 360º view of any product.
+                                <u>Developer's Note</u>
+                                    <ul>
+                                        <li>This tool's mobile functionalty is lacking and only consistently performs on iOS in Safari.</li>
+                                        <li>It may take a while to download the file considering they normally run upwards of 7MB.</li>
+                                    </ul>
                             </p>
-                            <small>
-                                Made by <a href="https://twitter.com/fykowo">Fyko</a>
-                                <br>
-                                This service is not affiliated nor endorsed by StockX LLC.
-                            </small>
-                            <hr>
+                            <br>
                             <input id="url" type="text" placeholder="StockX Link/Search" style="width: 85%; color: #2C2F33;">
                             <span id="select"></span>
                             <br>
                             <button class="dark" id="search" onclick="search()" style="background-color: #0055cc;">
                                 <i class="fas fa-search"></i> Search
                             </button>
+                            <button class="dark" id="preview" onclick="preview()" style="background-color: #9400D3;">
+                                <i class="fas fa-eye"></i> Preview
+                            </button>
                             <button class="dark" id="button" onclick="start()" style="background-color: #008315;">
                                 <i class="fas fa-rocket"></i> Create GIF
                             </button>
                             <div id="media-box" class="media"></div>
+                            <hr>
+                            <small>
+                                Made by <a href="https://twitter.com/fykowo" target="_blank">Fyko</a>
+                                <br>
+                                This service is not affiliated nor endorsed by StockX LLC.
+                            </small>
                         </div>
                     </div>
                 </div>
@@ -125,7 +136,7 @@
     </main>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.0/jquery.min.js"></script>
     <script src="https://unpkg.com/caramel@2.0.0-beta/dist/js/caramel.min.js"></script>
-    <a href="https://github.com/fyko/stockx-gif" class="github-corner" aria-label="View source on GitHub">
+    <a href="https://github.com/fyko/stockx-gif" target="_blank" class="github-corner" aria-label="View source on GitHub">
         <svg width="80" height="80" viewBox="0 0 250 250"
             style="fill:#fff; color:#2C2F33; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true">
             <path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path>
@@ -175,10 +186,51 @@
             if (resp.status === 200 && json.Product) {
                 const images = json.Product.media['360'];
                 if (!images.length) return 0;
-                const edited = images.map(i => `${i.split('?')[0]}?w=1920`);
-                return [edited, json.Product.urlKey];
+                const edited = images.map(i => `${i.split('?')[0]}?w=1280`);
+                return [edited, json.Product.urlKey, json.Product.title];
             }
             return null;
+        }
+
+        function makePreview(images, name, friendly = '') {
+            const button = document.getElementById('preview');
+            button.disabled = true;
+            button.autocomplete = 'off';
+
+            button.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Generating preview... (<span id="preview-percentage">0</span>%)';
+
+            const percentage = document.getElementById('preview-percentage');
+            const content = document.getElementById('content');
+
+            gifshot.createGIF({
+                images,
+                gifWidth: 256,
+                gifHeight: 144,
+                workers: 3,
+                progressCallback: (number) => {
+                    console.log(number);
+                    percentage.innerText = Math.round(number * 100);
+                },
+            }, (obj) => {
+                if (obj.error) {
+                    return Swal.fire({
+                        icon: 'error',
+                        title: ' An error occurred!',
+                        text: `Code: ${obj.errorCode || 'Unknown Error'}<br>Message: ${obj.errorMsg || 'An unknown error occurred.'}`,
+                    });
+                }
+
+                button.disabled = false;
+                button.autocomplete = '';
+                button.innerHTML = '<i class="fas fa-eye"></i> Preview';
+
+                Swal.fire({
+                    text: friendly,
+                    // text: 'GIF Preview',
+                    imageUrl: obj.image,
+                    imageAlt: `Preview of ${name}`,
+                });
+            });
         }
 
         function makeGif(images, name) {
@@ -196,6 +248,8 @@
                 images,
                 gifWidth: 1280,
                 gifHeight: 720,
+                // gifWidth: 256 ,
+                // gifHeight: 144,
                 workers: 3,
                 progressCallback: (number) => {
                     console.log(number);
@@ -203,17 +257,11 @@
                 },
             }, (obj) => {
                 if (obj.error) {
-                    return content.innerHTML += `
-                        <br>
-                        <div class="panel error">
-                            <div class="head"><i class="fas fa-exclamation-circle"></i> An error occurred!</div>
-                            <div class="body" style="color: #2C2F33;" align="left">
-                                Code: ${obj.errorCode || 'Unknown Error'}
-                                <br>
-                                Message: ${obj.errorMsg || 'An unknown error occurred.'}
-                            </div>
-                        </div>
-                    `;
+                    return Swal.fire({
+                        icon: 'error',
+                        title: ' An error occurred!',
+                        text: `Code: ${obj.errorCode || 'Unknown Error'}<br>Message: ${obj.errorMsg || 'An unknown error occurred.'}`,
+                    });
                 }
 
                 console.log(obj.image.substring(0, 30));
@@ -283,6 +331,24 @@
 
             const [imgs, name] = data;
             makeGif(imgs, name);
+        }
+
+        async function preview() {
+            const button = document.getElementById('preview');
+            button.disabled = true;
+            button.autocomplete = 'off';
+
+            const field = document.getElementById('url');
+            const key = parseStockXLink(field.value);
+            if (!key) return alertAndUnlock('Invalid StockX product URL!', 'preview');
+
+            const data = await fetchStockXData(key);
+            console.dir(data);
+            if (data === 0) return alertAndUnlock('StockX product has no 360º support!', 'preview');
+            if (!data) return alertAndUnlock('StockX product not found!', 'preview');
+
+            const [imgs, name, friendly] = data;
+            makePreview(imgs, name, friendly);
         }
 
         async function search() {
