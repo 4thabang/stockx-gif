@@ -121,7 +121,7 @@
                             <button class="dark" id="button" onclick="start()" style="background-color: #008315;">
                                 <i class="fas fa-rocket"></i> Create GIF
                             </button>
-                            <div id="media-box" class="media"></div>
+                            <span id="success-buttons"></span>
                             <hr>
                             <small>
                                 Made by <a href="https://twitter.com/fykowo" target="_blank">Fyko</a>
@@ -242,7 +242,7 @@
 
             const percentage = document.getElementById('percentage');
             const img = document.getElementById('theImage');
-            const content = document.getElementById('content');
+            const content = document.getElementById('success-buttons');
 
             gifshot.createGIF({
                 images,
