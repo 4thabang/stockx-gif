@@ -107,8 +107,12 @@
                                 This service is not affiliated nor endorsed by StockX LLC.
                             </small>
                             <hr>
-                            <input id="url" type="text" placeholder="StockX Link" style="width: 85%; color: #2C2F33;">
+                            <input id="url" type="text" placeholder="StockX Link/Search" style="width: 85%; color: #2C2F33;">
+                            <span id="select"></span>
                             <br>
+                            <button class="dark" id="search" onclick="search()" style="background-color: #0055cc;">
+                                <i class="fas fa-search"></i> Search
+                            </button>
                             <button class="dark" id="button" onclick="start()" style="background-color: #008315;">
                                 <i class="fas fa-rocket"></i> Create GIF
                             </button>
@@ -117,6 +121,7 @@
                     </div>
                 </div>
             </div>
+        </div>
     </main>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.0/jquery.min.js"></script>
     <script src="https://unpkg.com/caramel@2.0.0-beta/dist/js/caramel.min.js"></script>
@@ -248,8 +253,8 @@
             });
         }
 
-        function alertAndUnlock(message) {
-            const button = document.getElementById('button');
+        function alertAndUnlock(message, element = 'button') {
+            const button = document.getElementById(element);
             button.disabled = false;
             button.autocomplete = '';
 
@@ -272,6 +277,50 @@
 
             const [imgs, name] = data;
             makeGif(imgs, name);
+        }
+
+        async function search() {
+            const button = document.getElementById('search');
+            button.disabled = true;
+            button.autocomplete = 'off';
+            button.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Searching...';
+
+            const search = document.getElementById('url');
+            if (!search) return alertAndUnlock('No query provided!', 'search');
+
+            const query = new URLSearchParams();
+            query.set('x-algolia-agent', encodeURIComponent('Algolia for vanilla JavaScript 3.22.1'));
+            query.set('x-algolia-application-id', 'XW7SBCT9V6');
+            query.set('x-algolia-api-key', '6bfb5abee4dcd8cea8f0ca1ca085c2b3');
+
+            const resp = await fetch(`https://xw7sbct9v6-dsn.algolia.net/1/indexes/products/query?${query}`, {
+                method: 'POST',
+                body: JSON.stringify({
+                    params: `query=${encodeURIComponent(search.value)}&hitsPerPage=50&facets=*`
+                })
+            });
+
+            if (resp.status !== 200) return alertAndUnlock('An unknown error occurred when searching for the product. Please find the product on stockx.com.', 'search'); 
+            const json = await resp.json();
+            console.dir(json);
+            const { hits } = json;
+            const mapped = hits.map(h => `<option value="${h.url}">${h.name}</option>`);
+
+            const select = document.getElementById('select');
+            select.innerHTML = `
+                <select id="selector" style="background-color: white; width: max-content;" onchange="selectorChange(this.value)">
+                    ${mapped.join('\n')}
+                </select>
+            `;
+
+            button.disabled = false;
+            button.autocomplete = '';
+            button.innerHTML = `<i class="fas fa-check"></i> Found ${mapped.length} items!`;
+        }
+
+        function selectorChange(val) {
+            const url = document.getElementById('url');
+            url.value = `https://stockx.com/${val}`;
         }
     </script>
 </body>
