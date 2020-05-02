@@ -247,6 +247,12 @@
 
                     element.click();
                     document.body.removeChild(element);
+
+                    setTimeout(() => {
+                        downloadButton.disabled = false;
+                        downloadButton.autocomplete = '';
+                        downloadButton.innerHTML = '<i class="fas fa-download"></i> Download GIF';
+                    }, 5000);
                 }
 
                 reloadButton.onclick = () => document.location.reload(window.location);
@@ -312,6 +318,8 @@
                     ${mapped.join('\n')}
                 </select>
             `;
+
+            if (hits.length) search.value = `https://stockx.com/${hits[0].url}`;
 
             button.disabled = false;
             button.autocomplete = '';
