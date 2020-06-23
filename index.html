@@ -124,9 +124,9 @@
                             <span id="success-buttons"></span>
                             <hr>
                             <small>
-                                Made by <a href="https://twitter.com/fykowo" target="_blank">Fyko</a>
-                                <br>
-                                We collect analytics with <a href="/privacy" target="_blank">SimpleAnalytics</a>, a privacy-friendly analytics engine.
+								Made by <a href="https://twitter.com/fykowo" target="_blank">Fyko</a>
+								<br>
+								We collect analytics with <a href="/privacy" target="_blank">SimpleAnalytics</a>, a privacy-friendly analytics engine | Total Visits: <span id="visits"></span>
                                 <br>
                                 This service is not affiliated nor endorsed by StockX LLC.
                             </small>
@@ -162,7 +162,18 @@
             return (false);
         }
 
+        async function fetchVisits() {
+            const res = await fetch('https://simpleanalytics.com/stockx-gif.fyko.net.json');
+            const json = await res.json();
+            const val = json.pageviews.toLocaleString('en-US');
+            console.log(`Total Visits: ${val}`);
+
+            document.getElementById('visits').innerText = val;
+        }
+
         function onload() {
+            fetchVisits();
+
             const link = getQueryVariable('url');
             if (!link) return;
 
