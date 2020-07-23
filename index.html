@@ -90,6 +90,8 @@
 </head>
 
 <body onload="onload()">
+    <!-- events!  -->
+    <script>window.sa_event=window.sa_event||function(){a=[].slice.call(arguments);sa_event.q?sa_event.q.push(a):sa_event.q=[a]};</script>
     <main class="main">
         <div class="center">
             <div class="row">
@@ -189,6 +191,7 @@
         }
 
         async function fetchStockXData(id) {
+	    if (sa_event) sa_event('fetch_stockx_data');
             const resp = await fetch(`https://stockx.com/api/products/${id}?includes=market&currency=usd`, {
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest',
@@ -206,6 +209,7 @@
         }
 
         function makePreview(images, name, friendly = '') {
+	    if (sa_event) sa_event('make_preview');
             const button = document.getElementById('preview');
             button.disabled = true;
             button.autocomplete = 'off';
@@ -247,6 +251,7 @@
         }
 
         function makeGif(images, name) {
+	    if (sa_event) sa_event('make_gif');
             const button = document.getElementById('button');
             button.disabled = true;
             button.autocomplete = 'off';
@@ -270,6 +275,7 @@
                 },
             }, (obj) => {
                 if (obj.error) {
+		    if (sa_event) sa_event(`giv_error_${obj.errorCode || 'unknown'}`);
                     return Swal.fire({
                         icon: 'error',
                         title: ' An error occurred!',
@@ -302,6 +308,7 @@
                 document.body.appendChild(element);
 
                 downloadButton.onclick = () => {
+		    if (sa_event) sa_event('download_gif');
                     downloadButton.disabled = true;
                     downloadButton.autocomplete = 'off';
                     downloadButton.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Downloading...';
@@ -365,6 +372,7 @@
         }
 
         async function search() {
+	    if (sa_event) sa_event('used_search');
             const button = document.getElementById('search');
             button.disabled = true;
             button.autocomplete = 'off';
